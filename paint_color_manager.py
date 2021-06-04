@@ -51,13 +51,6 @@ def usage(name: str = "User"):
     typer.echo(f"Hello {name}. This is for querying paint color matching between Nippon and Dulux.")
 
 
-@app.command()
-def goodbye(name: str, formal: bool = False):
-    if formal:
-        typer.echo(f"Goodbye Ms. {name}. Have a good day.")
-    else:
-        typer.echo(f"Bye {name}!")
-
 
 @app.command()
 def refresh_nippon_data(save_path: str = "./"):

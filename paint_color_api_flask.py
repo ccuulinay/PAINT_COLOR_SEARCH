@@ -5,7 +5,6 @@ import random
 import logging
 import os
 import pathlib
-import datetime
 
 from paint_colors import paint_color_helper
 
