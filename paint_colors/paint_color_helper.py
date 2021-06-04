@@ -19,6 +19,85 @@ def get_db_engine():
     return db_engine
 
 
+def refresh_nippon_paint_colors(nippon_df, engine=None, tn="PAINT_COLOR_DICT_NIPPON_DTL"):
+    dedup_nippon_df = nippon_df.sort_values(
+        by=["code"]
+    ).drop_duplicates(
+        subset=["hex_code"], keep="first"
+    ).reset_index(drop=True)
+    logging.info(f"Start refreshing {tn}")
+    if engine:
+        dedup_nippon_df.to_sql(
+            tn,
+            engine,
+            index=False,
+            if_exists="replace"
+        )
+    else:
+        if "db_engine" not in globals():
+            get_db_engine()
+        dedup_nippon_df.to_sql(
+            tn,
+            db_engine,
+            index=False,
+            if_exists="replace"
+        )
+    logging.info(f"Done refreshing {tn}.")
+
+
+def refresh_dulux_paint_colors(dulux_df, engine=None, tn="PAINT_COLOR_DICT_DULUX_DTL"):
+    dedup_dulux_df = dulux_df.sort_values(
+        by=["code"]
+    ).drop_duplicates(
+        subset=["hex_code"], keep="first"
+    ).reset_index(drop=True)
+    logging.info(f"Start refreshing {tn}")
+    if engine:
+        dedup_dulux_df.to_sql(
+            tn,
+            engine,
+            index=False,
+            if_exists="replace"
+        )
+    else:
+        if "db_engine" not in globals():
+            get_db_engine()
+        dedup_dulux_df.to_sql(
+            tn,
+            db_engine,
+            index=False,
+            if_exists="replace"
+        )
+    logging.info(f"Done refreshing {tn}.")
+
+
+def refresh_paint_colors(colors_df_map, engine=None, tn="PAINT_COLORS"):
+    _dfs = []
+    for brand, cdf in colors_df_map.items():
+        df = cdf.copy()
+        df["brand"] = brand
+        _dfs.append(df)
+    dn_mapping_df = pd.concat(_dfs, ignore_index=True)
+    logging.info(f"Start refreshing {tn}")
+    if engine:
+        dn_mapping_df.to_sql(
+            tn,
+            engine,
+            index=False,
+            if_exists="replace"
+        )
+    else:
+        if "db_engine" not in globals():
+            get_db_engine()
+        dn_mapping_df.to_sql(
+            tn,
+            db_engine,
+            index=False,
+            if_exists="replace"
+        )
+    logging.info(f"Done refreshing {tn}.")
+
+
 def save_paint_color_api_audit_log(msg):
     if "db_engine" not in globals():
         get_db_engine()
