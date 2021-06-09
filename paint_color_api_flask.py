@@ -52,6 +52,34 @@ def get_color_by_id(colorid: str):
     return jsonify(c)
 
 
+@app.route("/paintcolor/_search", methods=["GET", "POST"])
+def search_colors_by_keyword():
+    if request.method == 'POST':
+        data = request.get_json()
+        color_kw = data.get("color_keyword")
+        # if color_kw is not None and color_kw != "":
+        #     r_msg = paint_color_helper.get_colors_by_kw(color_kw, output_dataframe=False)
+        #     return jsonify(r_msg)
+        # else:
+        #     r_msg = {
+        #         "message": "request invalid."
+        #     }
+        #     return jsonify(r_msg)
+    elif request.method == 'GET':
+        data = request.args
+    else:
+        return abort(403)
+    color_kw = data.get("color_keyword")
+    if color_kw is not None and color_kw != "":
+        r_msg = paint_color_helper.get_colors_by_kw(color_kw, output_dataframe=False)
+        return jsonify(r_msg)
+    else:
+        r_msg = {
+            "message": "request invalid."
+        }
+        return jsonify(r_msg)
+
+
 @app.route("/paintcolor/all", methods=["GET", "POST"])
 def get_all_paint_colors():
     c = paint_color_helper.get_all_paint_colors()
@@ -63,7 +91,7 @@ def get_topk_nearest_paint_colors_by_id():
     if request.method == 'POST':
         data = request.get_json()
         color_id = data.get("color_id")
-        if color_id:
+        if color_id is not None:
             top_k = data.get("top_k", 3)
             r_msg = paint_color_helper.get_nearest_colors_by_id(color_id, top_k)
             # print(r_msg)
@@ -77,7 +105,7 @@ def get_topk_nearest_paint_colors_by_id():
     elif request.method == 'GET':
         data = request.args
         color_id = data.get("color_id")
-        if color_id:
+        if color_id is not None:
             top_k = data.get("top_k", 3)
             r_msg = paint_color_helper.get_nearest_colors_by_id(color_id, top_k)
             # print(r_msg)
@@ -179,6 +207,7 @@ def after_request_func(response):
     logger.debug(f"AFTER REQUEST: {msg}")
     paint_color_helper.save_paint_color_api_audit_log(msg)
     return response
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10086, debug=True, threaded=True, )
