@@ -128,7 +128,7 @@ def save_paint_color_api_audit_log(msg):
         logging.warning(f"Write audit log failed.")
 
 
-def get_color_by_id(color_id):
+def get_color_by_id(color_id, output_dataframe=False):
 
     with mysql_helper.get_tjhub_mysql_connection() as conn:
         sq = f"""
@@ -137,10 +137,42 @@ def get_color_by_id(color_id):
         """
         df = mysql_helper.execute_sql(conn, sq)
 
-    return {
-        "headers": df.columns.values.tolist(),
-        "data": df.values.tolist()
+    if output_dataframe:
+        return df
+    else:
+        return {
+            "headers": df.columns.values.tolist(),
+            "data": df.values.tolist()
+        }
+
+
+def get_colors_by_kw(color_kw, output_dataframe=False):
+    color_tb_cols = {
+        "PAINT_COLOR_DICT_DULUX_DTL": ["code", "cat0_cn"]
+        , "PAINT_COLOR_DICT_NIPPON_DTL": ["code", "cat0_en", "cat0_cn", "name"]
     }
+
+    dfs = []
+    with mysql_helper.get_tjhub_mysql_connection() as conn:
+
+        for tn, cols in color_tb_cols.items():
+            sq = f"""
+            SELECT 
+                code, R, G, B, hex_code 
+            FROM {tn} 
+            WHERE CONCAT_WS(" ", {','.join(cols)}) LIKE '%{color_kw}%'
+            """
+            # print(sq)
+            _df = mysql_helper.execute_sql(conn, sq)
+            dfs.append(_df)
+    df = pd.concat(dfs, ignore_index=True)
+    if output_dataframe:
+        return df
+    else:
+        return {
+            "headers": df.columns.values.tolist(),
+            "data": df.values.tolist()
+        }
 
 
 def get_all_paint_colors_df():
