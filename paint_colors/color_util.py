@@ -1,6 +1,11 @@
 import numpy as np
 
 
+def hex_to_rgb(hex_code):
+    h = hex_code.lstrip("#")
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+
 def get_rgb_distance(c1, c2):
     d = np.sqrt(((c2[0] - c1[0]) * 0.3) ** 2 + ((c2[1] - c1[1]) * 0.59) ** 2 + ((c2[2] - c1[2]) * 0.11) ** 2)
     return d
