@@ -18,6 +18,17 @@ def get_db_engine():
     return db_engine
 
 
+def build_response(df):
+    r = {
+        "meta": {
+            "row_count": df.shape[0]
+        },
+        "headers": df.columns.values.tolist(),
+        "data": df.values.tolist()
+    }
+    return r
+
+
 def refresh_nippon_paint_colors(nippon_df, engine=None, tn="PAINT_COLOR_DICT_NIPPON_DTL"):
     dedup_nippon_df = nippon_df.sort_values(
         by=["code"]
@@ -102,7 +113,7 @@ def save_paint_color_api_audit_log(msg):
         get_db_engine()
     msg_df = pd.DataFrame([msg])
     msg_df["DATA_DATE"] = datetime.datetime.now()
-    print(msg_df)
+    # print(msg_df)
 
     db_types = {
         "app_name": types.VARCHAR(100),
@@ -140,10 +151,12 @@ def get_color_by_id(color_id, output_dataframe=False):
     if output_dataframe:
         return df
     else:
-        return {
-            "headers": df.columns.values.tolist(),
-            "data": df.values.tolist()
-        }
+        # return {
+        #     "headers": df.columns.values.tolist(),
+        #     "data": df.values.tolist()
+        # }
+
+        return build_response(df)
 
 
 def get_colors_by_kw(color_kw, output_dataframe=False):
@@ -165,14 +178,23 @@ def get_colors_by_kw(color_kw, output_dataframe=False):
             # print(sq)
             _df = mysql_helper.execute_sql(conn, sq)
             dfs.append(_df)
-    df = pd.concat(dfs, ignore_index=True)
+        df = pd.concat(dfs, ignore_index=True)
+        color_ids_str = "', '".join(df["code"].unique())
+        sq = f"""
+        SELECT DISTINCT(code), brand FROM PAINT_COLORS
+        WHERE code in ('{str(color_ids_str)}')
+        """
+        brand_df = mysql_helper.execute_sql(conn, sq)
+        df = df.merge(brand_df, on=["code"], how="left")
     if output_dataframe:
         return df
     else:
-        return {
-            "headers": df.columns.values.tolist(),
-            "data": df.values.tolist()
-        }
+        # return {
+        #     "headers": df.columns.values.tolist(),
+        #     "data": df.values.tolist()
+        # }
+
+        return build_response(df)
 
 
 def get_all_paint_colors_df():
