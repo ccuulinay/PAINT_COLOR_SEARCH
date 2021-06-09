@@ -47,3 +47,13 @@ INFO: 2021-06-04 18:25:48,492: paint_color_cli: Start getting data of dulux.
 INFO: 2021-06-04 18:26:03,023: paint_color_cli: Total 1904 are collected and save to path ./.
 
 ```
+
+### Start API
+```bash
+gunicorn -w 4 -b 127.0.0.1:<port> paint_color_api_flask:app
+```
+
+### Start Streamlit Demo
+```bash
+streamlit run paint_color_st.py
+```
