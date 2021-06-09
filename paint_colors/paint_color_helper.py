@@ -221,7 +221,7 @@ def get_full_colors():
     return paint_colors
 
 
-def get_nearest_colors_by_id(color_id: str, top_k=3):
+def get_nearest_colors_by_id(color_id: str, top_k=3, output_dataframe=False):
     if "paint_colors" not in globals():
         get_full_colors()
 
@@ -251,15 +251,15 @@ def get_nearest_colors_by_id(color_id: str, top_k=3):
             target_paint_colors["cdist"].nsmallest(top_k).index
         ].sort_values(by=["cdist"])
 
-        r_msg = {
-            "query_color": c_details,
-            "nearest_colors": nn_colors.to_dict(orient="records")
-        }
+        if output_dataframe:
+            return nn_colors
+        else:
+            r_msg = build_response(nn_colors)
 
     return r_msg
 
 
-def get_nearest_colors_by_rgb(r, g, b, top_k=3):
+def get_nearest_colors_by_rgb(r, g, b, top_k=3, output_dataframe=False):
     if "paint_colors" not in globals():
         get_full_colors()
 
@@ -276,9 +276,13 @@ def get_nearest_colors_by_rgb(r, g, b, top_k=3):
         target_paint_colors["cdist"].nsmallest(top_k).index
     ].sort_values(by=["cdist"])
 
-    r_msg = {
-        "query_color": {"R": r, "G": g, "B": b},
-        "nearest_colors": nn_colors.to_dict(orient="records")
-    }
+    # r_msg = {
+    #     "query_color": {"R": r, "G": g, "B": b},
+    #     "nearest_colors": nn_colors.to_dict(orient="records")
+    # }
+    if output_dataframe:
+        return nn_colors
+    else:
+        r_msg = build_response(nn_colors)
 
-    return r_msg
+        return r_msg
